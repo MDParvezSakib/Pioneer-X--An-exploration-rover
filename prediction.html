@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Prediction | Pioneer-X</title>
+  <style>
+    body {
+      background-color: #0d0d0d;
+      color: #fff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background: #1a1a1a;
+      padding: 20px;
+      text-align: center;
+      border-bottom: 2px solid #ff4c4c;
+    }
+
+    header h1 {
+      margin: 0;
+      color: #ff4c4c;
+      font-size: 2rem;
+    }
+
+    .nav-btn {
+      display: inline-block;
+      margin: 20px;
+      padding: 10px 20px;
+      background-color: #ff4c4c;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+
+    .content {
+      padding: 30px;
+      text-align: center;
+    }
+
+    .predict-result {
+      margin-top: 30px;
+      font-size: 1.2rem;
+      color: #ccc;
+      background: #1f1f1f;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(255, 76, 76, 0.4);
+      text-align: left;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .footer {
+      background-color: #000000;
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+      margin-top: 50px;
+      border-top: 5px solid #ff4800;
+    }
+
+    .footer .social-icons a {
+      color: #fff;
+      margin: 0 10px;
+      text-decoration: none;
+      font-size: 1.1rem;
+    }
+
+    .footer .social-icons a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Predict the Result</h1>
+  </header>
+
+  <div style="text-align: center;">
+    <a href="index.html" class="nav-btn">🏠 Home</a>
+  </div>
+
+  <div class="content">
+    <h2>AI Prediction Zone</h2>
+    <div class="predict-result" id="predictionArea">
+      Analyzing data...
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="social-icons">
+      <a href="https://www.facebook.com/Mr.ParvezSakib/" target="_blank">
+        <img src="fblogo.png" alt="Facebook" style="height:24px; vertical-align:middle; margin-right:8px;"> Facebook
+      </a>
+      <a href="https://wa.link/yhzkyv" target="_blank">
+        <img src="wplogo.png" alt="WhatsApp" style="height:24px; vertical-align:middle; margin-right:8px;"> WhatsApp
+      </a>
+      <a href="https://www.linkedin.com/in/parvezsakib/" target="_blank">
+        <img src="linkdin.png" alt="LinkedIn" style="height:24px; vertical-align:middle; margin-right:8px;"> LinkedIn
+      </a>
+      <a href="https://github.com/MDParvezSakib" target="_blank">
+        <img src="github.png" alt="GitHub" style="height:24px; vertical-align:middle; margin-right:8px;"> GitHub
+      </a>
+    </div>
+    <p>© 2025 Pioneer-X. Built with ❤️ by Team Pioneer-X.</p>
+  </footer>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAdWXBhJyBMxMqon98JsP9_KcvyGEKTIl0",
+      authDomain: "mars-rover-297aa.firebaseapp.com",
+      databaseURL: "https://mars-rover-297aa-default-rtdb.firebaseio.com",
+      projectId: "mars-rover-297aa",
+      storageBucket: "mars-rover-297aa.appspot.com",
+      messagingSenderId: "614634274089",
+      appId: "1:614634274089:web:f3ba56eafc32d460530b38",
+      measurementId: "G-J460PH51P7"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+
+    const sensorRef = ref(database, 'sensorData');
+    onValue(sensorRef, (snapshot) => {
+      const data = snapshot.val();
+      generatePrediction(data);
+    });
+
+    function generatePrediction(data) {
+      const temp = data?.temperature;
+      const moisture = data?.soilMoisture;
+      const objectDetected = data?.objectDetected;
+      const motion = data?.motionDetected;
+
+      let tempStatus = '';
+      if (temp >= 15 && temp <= 56.7) {
+        tempStatus = `🌡️ Temperature: ${temp} °C → Normal`;
+      } else {
+        tempStatus = `🌡️ Temperature: ${temp} °C → ⚠️ Abnormal`;
+      }
+
+      let moistureStatus = '';
+      if (moisture >= 20 && moisture <= 40) {
+        moistureStatus = `💧 Soil Moisture: ${moisture}% → Normal`;
+      } else {
+        moistureStatus = `💧 Soil Moisture: ${moisture}% → ⚠️ Out of ideal range`;
+      }
+
+      let objectStatus = '';
+      if (objectDetected) {
+        objectStatus = `👀 Object Status: Object Available`;
+      } else {
+        objectStatus = `👀 Object Status: No Object Detected`;
+      }
+
+      let motionStatus = '';
+      if (motion) {
+        motionStatus = `🛑 Motion Status: Movement Detected!`;
+      } else {
+        motionStatus = `🛢️ Motion Status: No Movement`;
+      }
+
+      let imageStatus = `📷 ESP32-CAM: Surface looks flat and clear. `;
+
+      const finalResult = `
+        ${tempStatus}<br><br>
+        ${moistureStatus}<br><br>
+        ${objectStatus}<br><br>
+        ${motionStatus}<br><br>
+        ${imageStatus}
+      `;
+
+      document.getElementById('predictionArea').innerHTML = finalResult;
+    }
+  </script>
+</body>
+</html>

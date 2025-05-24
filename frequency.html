@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Mars Rover Frequency Graph</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+</head>
+<body>
+  <h2>Ultrasonic Frequency Monitor</h2>
+  <canvas id="freqChart" width="400" height="200"></canvas>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAdWXBhJyBMxMqon98JsP9_KcvyGEKTIl0",
+      authDomain: "mars-rover-297aa.firebaseapp.com",
+      databaseURL: "https://mars-rover-297aa-default-rtdb.firebaseio.com",
+      projectId: "mars-rover-297aa",
+      storageBucket: "mars-rover-297aa.appspot.com",
+      messagingSenderId: "907369365113",
+      appId: "1:907369365113:web:1fa1c2144c8083e76e3b11"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const dbRef = firebase.database().ref("sensorData/ultrasonicFrequency");
+
+    const ctx = document.getElementById('freqChart').getContext('2d');
+    const freqChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'Frequency (Hz)',
+          data: [],
+          borderColor: 'blue',
+          fill: false
+        }]
+      },
+      options: {
+        responsive: true,
+        animation: false,
+        scales: {
+          x: {
+            title: { display: true, text: 'Time' }
+          },
+          y: {
+            beginAtZero: true,
+            title: { display: true, text: 'Hz' }
+          }
+        }
+      }
+    });
+
+    dbRef.on('value', snapshot => {
+      const value = snapshot.val();
+      const now = new Date().toLocaleTimeString();
+
+      freqChart.data.labels.push(now);
+      freqChart.data.datasets[0].data.push(value);
+
+      if (freqChart.data.labels.length > 10) {
+        freqChart.data.labels.shift();
+        freqChart.data.datasets[0].data.shift();
+      }
+
+      freqChart.update();
+    });
+  </script>
+</body>
+</html>

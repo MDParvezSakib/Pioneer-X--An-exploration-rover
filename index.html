@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pioneer-X (Mars Exploration Rover)</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      background-color: #0d0d0d;
+      color: #fff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background: #1a1a1a;
+      padding: 20px;
+      text-align: center;
+      border-bottom: 2px solid #ff4c4c;
+    }
+
+    header h1 {
+      margin: 0;
+      color: #ff4c4c;
+      font-size: 2rem;
+    }
+
+    .dashboard {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 30px;
+    }
+
+    .card {
+      background: #1f1f1f;
+      margin: 15px;
+      padding: 20px;
+      border-radius: 10px;
+      width: 300px;
+      box-shadow: 0 0 10px rgba(255, 76, 76, 0.4);
+      font-size: 1.1rem;
+    }
+
+    .wide-card {
+      width: 1280px;
+      max-width: 100%;
+    }
+
+    iframe {
+      width: 1280px;
+      max-width: 100%;
+      height: 720px;
+      border-radius: 8px;
+      background: #000;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .footer {
+      background-color: #000000;
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+      margin-top: 50px;
+      border-top: 5px solid #ff4800;
+    }
+
+    .footer .social-icons {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 10px;
+    }
+
+    .footer .social-icons a {
+      color: #fff;
+      text-decoration: none;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+    }
+
+    .footer .social-icons img {
+      height: 24px;
+      margin-right: 8px;
+    }
+
+    .nav-buttons {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .nav-buttons a {
+      background: #ff4c4c;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .sensor-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+
+    @media (max-width: 768px) {
+      .dashboard {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .card, .wide-card {
+        width: 90% !important;
+      }
+
+      .nav-buttons {
+        flex-direction: column;
+        bottom: 10px;
+        left: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1 style="font-size:300%;"><span class="highlight">Pioneer-X</span></h1>
+    <p style="font-size:150%; color:rgb(255, 255, 255);">Exploration Rover</p>
+  </header>
+
+  <!-- ESP32-CAM Monitoring -->
+  <div class="dashboard">
+    <div class="card wide-card">
+      📷 ESP32-CAM Monitoring:<br>
+      <iframe src="http://192.168.35.140/" style="border:none;"></iframe>
+    </div>
+  </div>
+
+  <!-- Sensor Cards in Row -->
+  <div class="sensor-container">
+    <div class="card">🌡️ Temperature: <span id="temp">--</span></div>
+    <div class="card">💧 Soil Moisture: <span id="moisture">--</span></div>
+    <div class="card">👀 Object Detected: <span id="object">--</span></div>
+    <div class="card">📡 Ultrasonic Sensor: <span id="frequency">-- Hz</span></div>
+  </div>
+
+  <!-- Navigation Buttons -->
+  <div class="nav-buttons">
+    <a href="about.html">More</a>
+    <a href="prediction.html">Prediction</a>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>© 2025 Pioneer-X. Built with ❤️ by Team Pioneer-X.</p>
+  </footer>
+
+  <!-- Firebase Integration -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAdWXBhJyBMxMqon98JsP9_KcvyGEKTIl0",
+      authDomain: "mars-rover-297aa.firebaseapp.com",
+      databaseURL: "https://mars-rover-297aa-default-rtdb.firebaseio.com",
+      projectId: "mars-rover-297aa",
+      storageBucket: "mars-rover-297aa.appspot.com",
+      messagingSenderId: "614634274089",
+      appId: "1:614634274089:web:f3ba56eafc32d460530b38",
+      measurementId: "G-J460PH51P7"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const sensorRef = ref(db, 'sensorData');
+
+    const freqElement = document.getElementById("frequency");
+    const tempElement = document.getElementById("temp");
+    const moistElement = document.getElementById("moisture");
+    const objElement = document.getElementById("object");
+
+    onValue(sensorRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        tempElement.innerText = data.temperature + " °C";
+        moistElement.innerText = data.soilMoisture + " %";
+        objElement.innerText = data.objectDetected ? "Yes" : "No";
+        freqElement.innerText = (data.ultrasonicFrequency ?? 0) + " Hz";
+      }
+    }, (error) => {
+      console.error("Error reading data: ", error);
+    });
+  </script>
+</body>
+</html>
